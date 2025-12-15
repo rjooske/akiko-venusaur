@@ -15,6 +15,7 @@
   let editor = $state<EditorState | undefined>();
   let viewScale = $state(1);
   let brightness = $state(0.5);
+  let keepVerticalSelection = $state(true);
 
   async function handleSvgInput(input: HTMLInputElement): Promise<void> {
     assert(input.files !== null);
@@ -104,6 +105,59 @@
       <img src="akiko-venusaur.png" alt="あきこフシギバナ" />
       <span>あきこフシギバナ</span>
     </h1>
+    <div class="editor-control">
+      <label
+        for="view-scale-range"
+        style="grid-column: label-left / label-right; grid-row: 1/2;"
+      >
+        拡大率:
+      </label>
+      <input
+        id="view-scale-range"
+        type="range"
+        bind:value={viewScale}
+        min="1"
+        max="10"
+        step="0.01"
+        style="grid-column: range-left / range-right; grid-row: 1/2;"
+      />
+      <label
+        for="brightness-range"
+        style="grid-column: label-left / label-right; grid-row: 2/3;"
+      >
+        明度:
+      </label>
+      <input
+        id="brightness-range"
+        type="range"
+        bind:value={brightness}
+        min="0"
+        max="1"
+        step="0.01"
+        style="grid-column: range-left / range-right; grid-row: 2/3;"
+      />
+      <label style="grid-column: button-left / button-right; grid-row: 1/2;">
+        <input type="checkbox" bind:checked={keepVerticalSelection} />
+        左右の辺を保持
+      </label>
+      <button
+        disabled={editor === undefined ||
+          (editor.selectedEdges.top === undefined &&
+            editor.selectedEdges.right === undefined &&
+            editor.selectedEdges.bottom === undefined &&
+            editor.selectedEdges.left === undefined)}
+        onclick={() => {
+          if (editor !== undefined) {
+            editor.selectedEdges.top = undefined;
+            editor.selectedEdges.right = undefined;
+            editor.selectedEdges.bottom = undefined;
+            editor.selectedEdges.left = undefined;
+          }
+        }}
+      >
+        選択中の辺をクリア
+      </button>
+    </div>
     <div>
       <label>
         履修要覧SVG:
@@ -118,31 +172,11 @@
       <br />
       <button onclick={handleCopyOutput}>出力をコピー</button>
     </div>
-    <div class="view-control">
-      <label id="view-scale-range">拡大率:</label>
-      <input
-        id="view-scale-range"
-        type="range"
-        bind:value={viewScale}
-        min="1"
-        max="10"
-        step="0.01"
-      />
-      <label id="brightness-range">明度:</label>
-      <input
-        id="brightness-range"
-        type="range"
-        bind:value={brightness}
-        min="0"
-        max="1"
-        step="0.01"
-      />
-    </div>
   </header>
   {#if editor === undefined}
     <main></main>
   {:else}
-    <Editor bind:editor {viewScale} {brightness} />
+    <Editor bind:editor {viewScale} {brightness} {keepVerticalSelection} />
   {/if}
 </main>
 
@@ -178,15 +212,20 @@
     }
   }
 
-  .view-control {
+  .editor-control {
     display: grid;
-    grid-template-columns: auto 200px;
+    grid-template-columns: [label-left] auto [label-right] 10px [range-left] 150px [range-right] 30px [button-left] auto [button-right];
     width: fit-content;
-    gap: 10px;
 
-    & > label {
+    & > label[for="view-scale-range"],
+    & > label[for="brightness-range"] {
       align-self: center;
       justify-self: right;
+    }
+
+    & > button {
+      grid-column: button-left / button-right;
+      grid-row: 2/3;
     }
   }
 </style>

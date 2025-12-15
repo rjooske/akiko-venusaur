@@ -36,7 +36,13 @@
     editor = $bindable(),
     viewScale,
     brightness,
-  }: { editor: EditorState; viewScale: number; brightness: number } = $props();
+    keepVerticalSelection,
+  }: {
+    editor: EditorState;
+    viewScale: number;
+    brightness: number;
+    keepVerticalSelection: boolean;
+  } = $props();
 
   function getClosestSelectableEdge(
     app: EditorState,
@@ -132,9 +138,11 @@
       editor.cells.push(cell);
       editor.highlightedEdge = undefined;
       editor.selectedEdges.top = undefined;
-      editor.selectedEdges.right = undefined;
       editor.selectedEdges.bottom = undefined;
-      editor.selectedEdges.left = undefined;
+      if (!keepVerticalSelection) {
+        editor.selectedEdges.left = undefined;
+        editor.selectedEdges.right = undefined;
+      }
     }
   }
 
