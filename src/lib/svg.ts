@@ -8,7 +8,7 @@ import {
   type Rect,
   type Vector,
 } from "./app";
-import { sortByKeyCached, unreachable } from "./util";
+import { sortByKeyCached, tryParseFloat, unreachable } from "./util";
 import * as svgParser from "svg-parser";
 import svgPathParser from "svg-path-parser";
 
@@ -157,16 +157,38 @@ function findRects(root: svgParser.RootNode): Rect[] | undefined {
   return rects;
 }
 
-function getDimensions(root: svgParser.RootNode): [number, number] | undefined {
+function getViewBox(root: svgParser.RootNode): Rect | undefined {
   const node = root.children[0];
   if (
-    node.type === "element" &&
-    node.properties !== undefined &&
-    typeof node.properties.width === "number" &&
-    typeof node.properties.height === "number"
+    !(
+      node.type === "element" &&
+      node.properties !== undefined &&
+      typeof node.properties.viewBox === "string"
+    )
   ) {
-    return [node.properties.width, node.properties.height];
+    return undefined;
   }
+  const chunks = node.properties.viewBox
+    .trim()
+    .replaceAll(/\s+/g, " ")
+    .split(" ");
+  if (chunks.length !== 4) {
+    return undefined;
+  }
+  const [leftString, topString, rightString, bottomString] = chunks;
+  const left = tryParseFloat(leftString);
+  const top = tryParseFloat(topString);
+  const right = tryParseFloat(rightString);
+  const bottom = tryParseFloat(bottomString);
+  if (
+    left === undefined ||
+    top === undefined ||
+    right === undefined ||
+    bottom === undefined
+  ) {
+    return undefined;
+  }
+  return { x: left, y: top, width: right - left, height: bottom - top };
 }
 
 export function parseSvg(
@@ -184,11 +206,16 @@ export function parseSvg(
     return undefined;
   }
 
-  const dimensions = getDimensions(root);
-  if (dimensions === undefined) {
+  const viewBox = getViewBox(root);
+  if (
+    viewBox === undefined ||
+    // TODO: figure out what do to when the view box is not at the origin
+    viewBox.x !== 0 ||
+    viewBox.y !== 0
+  ) {
     return undefined;
   }
-  const [width, height] = dimensions;
+  const { width, height } = viewBox;
 
   return { rects, width, height };
 }

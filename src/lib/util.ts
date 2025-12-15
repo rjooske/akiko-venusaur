@@ -8,6 +8,13 @@ export function unreachable(_: never): never {
   throw new Error("Should be unreachable");
 }
 
+export function tryParseFloat(s: string): number | undefined {
+  const x = parseFloat(s);
+  if (!isNaN(x)) {
+    return x;
+  }
+}
+
 export function sortByKeyCached<T>(ts: T[], getKey: (t: T) => number): void {
   const pairs: [number, T][] = [];
   for (const t of ts) {
