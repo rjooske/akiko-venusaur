@@ -118,6 +118,7 @@ function pathToRects(path: svgPathParser.Command[]): Rect[] {
           y = command.y;
         }
         points.push({ x, y });
+        break;
       case "closepath": {
         const rect = pointsToRect(points);
         if (rect !== undefined) {
