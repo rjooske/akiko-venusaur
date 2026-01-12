@@ -3,6 +3,7 @@
   import {
     cellNameToCellPosition,
     cellPositionCompare,
+    rectScale,
     type Edge,
     type Rect,
   } from "$lib/app";
@@ -13,9 +14,15 @@
   import { onMount } from "svelte";
 
   let editor = $state<EditorState | undefined>();
-  let viewScale = $state(1);
+  let viewScale = $state(4);
   let brightness = $state(0.5);
   let keepVerticalSelection = $state(true);
+  let outputWidth = $state(2048);
+  let outputHeight = $derived(
+    editor !== undefined
+      ? Math.round((outputWidth / editor.svgWidth) * editor.svgHeight)
+      : undefined,
+  );
 
   async function handleSvgInput(input: HTMLInputElement): Promise<void> {
     assert(input.files !== null);
@@ -81,8 +88,9 @@
     });
 
     const cellNameToRect: Record<string, Rect> = {};
+    const scale = outputWidth / editor.svgWidth;
     for (const cell of cells) {
-      cellNameToRect[cell.name] = cell.rect;
+      cellNameToRect[cell.name] = rectScale(cell.rect, scale);
     }
     const output = JSON.stringify(cellNameToRect, undefined, 2);
 
@@ -169,6 +177,11 @@
         />
       </label>
       <br />
+      <label>
+        出力幅：
+        <input type="number" bind:value={outputWidth} style="width: 80px" />
+      </label>
+      <span>出力高さ：{outputHeight ?? "-"}</span>
       <br />
       <button onclick={handleCopyOutput}>出力をコピー</button>
     </div>
