@@ -22,6 +22,7 @@
   import {
     cellNameToCellPosition,
     cellPositionToCellName,
+    edgeScale,
     edgeToHighlightDimensions,
     edgeToSegment,
     pointSegmentDistance,
@@ -37,11 +38,13 @@
     viewScale,
     brightness,
     keepVerticalSelection,
+    showSelectableEdges,
   }: {
     editor: EditorState;
     viewScale: number;
     brightness: number;
     keepVerticalSelection: boolean;
+    showSelectableEdges: boolean;
   } = $props();
 
   function getClosestSelectableEdge(
@@ -196,7 +199,8 @@
   ></div>
 {/snippet}
 
-<main
+<div
+  class="root"
   onmousemove={(event) => handleMouseMoveThrottled.call(event)}
   onclick={handleClick}
 >
@@ -206,6 +210,22 @@
     height={editor.svgHeight * viewScale}
     style="--brightness: {brightness}"
   />
+  {#if showSelectableEdges}
+    {#each editor.edges as edge}
+      {@const e = edgeScale(edge, viewScale)}
+      {#if e.kind === "top" || e.kind === "bottom"}
+        <div
+          class="edge-display"
+          style="left: {e.x}px; top:{e.y}px; width: {e.width}px; border-top: 1px solid red"
+        ></div>
+      {:else if e.kind === "left" || e.kind === "right"}
+        <div
+          class="edge-display"
+          style="left: {e.x}px; top:{e.y}px; height: {e.height}px; border-left: 1px solid red"
+        ></div>
+      {/if}
+    {/each}
+  {/if}
   {#if editor.highlightedEdge !== undefined}
     {@render edge("edge-highlight", editor.highlightedEdge)}
   {/if}
@@ -236,10 +256,10 @@
       <button onclick={() => handleCellDelete(cell)}>削除</button>
     </div>
   {/each}
-</main>
+</div>
 
 <style lang="scss">
-  main {
+  .root {
     overflow: scroll;
     position: relative;
 
@@ -249,6 +269,7 @@
     }
   }
 
+  .edge-display,
   .edge-highlight,
   .selected-edge-highlight {
     position: absolute;

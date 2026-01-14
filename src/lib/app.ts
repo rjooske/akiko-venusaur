@@ -82,6 +82,19 @@ export type Edge =
   | { kind: "top" | "bottom"; x: number; y: number; width: number }
   | { kind: "left" | "right"; x: number; y: number; height: number };
 
+export function edgeScale(e: Edge, s: number): Edge {
+  switch (e.kind) {
+    case "top":
+    case "bottom":
+      return { kind: e.kind, x: e.x * s, y: e.y * s, width: e.width * s };
+    case "left":
+    case "right":
+      return { kind: e.kind, x: e.x * s, y: e.y * s, height: e.height * s };
+    default:
+      unreachable(e);
+  }
+}
+
 export function edgeToSegment(e: Edge): Segment {
   switch (e.kind) {
     case "top":

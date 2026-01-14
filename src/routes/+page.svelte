@@ -17,6 +17,7 @@
   let viewScale = $state(4);
   let brightness = $state(0.5);
   let keepVerticalSelection = $state(true);
+  let showSelectableEdges = $state(false);
   let outputWidth = $state(2048);
   let outputHeight = $derived(
     editor !== undefined
@@ -135,6 +136,18 @@
       >
         明度:
       </label>
+      <label
+        for="show-selectable-edges"
+        style="grid-column: label-left / label-right;"
+      >
+        選択可能な辺を表示：
+      </label>
+      <input
+        id="show-selectable-edges"
+        type="checkbox"
+        style="grid-column: range-left / range-right; justify-self: left;"
+        bind:checked={showSelectableEdges}
+      />
       <input
         id="brightness-range"
         type="range"
@@ -189,7 +202,13 @@
   {#if editor === undefined}
     <main></main>
   {:else}
-    <Editor bind:editor {viewScale} {brightness} {keepVerticalSelection} />
+    <Editor
+      bind:editor
+      {viewScale}
+      {brightness}
+      {keepVerticalSelection}
+      {showSelectableEdges}
+    />
   {/if}
 </main>
 
