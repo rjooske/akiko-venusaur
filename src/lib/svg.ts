@@ -138,6 +138,13 @@ function pathToRects(path: svgPathParser.Command[]): Rect[] {
     }
   }
 
+  // Handle unclosed rectangle paths that sometimes exist
+  const remainingRect = pointsToRect(points);
+  if (remainingRect !== undefined) {
+    rects.push(remainingRect);
+    points.splice(0);
+  }
+
   return rects;
 }
 
